@@ -297,7 +297,10 @@ async function consultarAlunos() {
             1: "Turma A",
             2: "Turma B",
             3: "Turma C",
-            // Adicione as turmas conforme necessário
+            4: "Turma D",
+            5: "Turma E",
+            6: "Turma F",
+          
         };
 
         const cursosMatricula = {
@@ -326,48 +329,83 @@ async function consultarAlunos() {
 }
 
 // Função para cadastrar o aluno
-if (formMatricula) {
-    formMatricula.addEventListener('submit', async function (e) {
-        e.preventDefault();  // Impede o comportamento padrão do formulário
+// Função para matricular o aluno
+function matricularAluno(event) {
+    event.preventDefault(); // Impede o envio padrão do formulário
 
-        const nome = document.getElementById('nome').value;
-        const telefone = document.getElementById('telefone').value;
-        const email = document.getElementById('email').value;
-        const cursoId = document.getElementById('curso').value;  // Alterado para 'cursoId'
-        const turmaId = document.getElementById('turma').value;  // Alterado para 'turmaId'
+    // Pegando os dados do formulário
+    const curso = document.getElementById('curso').value;
+    const turma = document.getElementById('turma').value;
+    const nome = document.getElementById('nome').value;
+    const email = document.getElementById('email').value;
+    const telefone = document.getElementById('telefone').value;
 
-        // Verificar se todos os campos estão preenchidos
-        if (!nome || !telefone || !email || !cursoId || !turmaId) {
-            mensagemErro.textContent = 'Todos os campos são obrigatórios!';
-            return;
+    // Verificar se todos os campos obrigatórios foram preenchidos
+    if (!curso || !turma || !nome || !email || !telefone) {
+        alert("Todos os campos são obrigatórios!");
+        return;
+    }
+
+    // Dados a serem enviados para o servidor
+    const aluno = {
+        nome,
+        email,
+        telefone,
+        cursoId: curso,
+        turmaId: turma
+    };
+
+    // Enviar os dados para o servidor via fetch
+    fetch('http://localhost:3000/matricular-aluno', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(aluno)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(`Erro: ${data.error}`);
         } else {
-            mensagemErro.textContent = ''; // Limpar mensagem de erro
+            alert('Aluno matriculado com sucesso!');
+            document.getElementById('formMatricula').reset(); // Limpa o formulário
         }
-
-        const aluno = { nome, telefone, email, cursoId, turmaId };  // Alterado para enviar 'cursoId' e 'turmaId'
-
-        try {
-            const response = await fetch('http://localhost:3000/api/matricular', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(aluno),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                alert('Aluno matriculado com sucesso! Código de matrícula: ' + data.CodigoMatricula);
-                formMatricula.reset();  // Resetar o formulário
-                consultarAlunos();  // Atualizar a lista de alunos
-            } else {
-                const errorData = await response.json();
-                alert('Erro ao matricular aluno: ' + (errorData.mensagem || errorData.message));
-            }
-        } catch (error) {
-            console.error('Erro ao enviar o formulário:', error);
-            alert('Erro ao enviar os dados');
-        }
+    })
+    .catch(error => {
+        console.error('Erro ao matricular aluno:', error);
+        alert('Erro ao matricular aluno. Tente novamente.');
     });
 }
+
+// Carregar as turmas quando o curso for selecionado
+document.getElementById('curso').addEventListener('change', function() {
+    const cursoId = this.value;
+
+    if (!cursoId) return; // Não faz nada se não houver curso selecionado
+
+    // Fazer a requisição para buscar as turmas
+    fetch(`http://localhost:3000/api/turmas?cursoId=${cursoId}`)
+        .then(response => response.json())
+        .then(turmas => {
+            const turmaSelect = document.getElementById('turma');
+            turmaSelect.innerHTML = '<option value="">Selecione uma turma</option>'; // Resetar as opções
+            turmas.forEach(turma => {
+                const option = document.createElement('option');
+                option.value = turma.id;
+                option.textContent = turma.nome;
+                turmaSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Erro ao carregar turmas:', error);
+            alert('Erro ao carregar as turmas.');
+        });
+});
+
+
+
+
 
 
 

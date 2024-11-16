@@ -96,75 +96,33 @@ app.post('/cadastrar-lead', async (req, res) => {
 
 // Endpoint para matricular o aluno
 // Exemplo de endpoint de matrícula
-app.post('/api/matricular', (req, res) => {
-    const { nome, email, telefone, cursoId, turmaId } = req.body;  // Alterado para 'cursoId' e 'turmaId'
-
-    console.log(req.body); // Verifique os dados recebidos
+app.post('/matricular-aluno', async (req, res) => {
+    const { nome, email, telefone, cursoId, turmaId } = req.body;
 
     if (!nome || !email || !telefone || !cursoId || !turmaId) {
-        return res.status(400).json({
-            erro: 'Todos os campos são obrigatórios',
-            missingFields: {
-                nome: !nome,
-                telefone: !telefone,
-                email: !email,
-                cursoId: !cursoId,  // Verificando se 'cursoId' está presente
-                turmaId: !turmaId   // Verificando se 'turmaId' está presente
-            }
-        });
+        return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
     }
-
-    // Gerar código de matrícula (sequencial ou baseado na lógica do seu banco)
-    const gerarCodigoMatricula = async () => {
-        // Aqui você pode gerar um código único, sequencial ou qualquer outra lógica
-        try {
-            const result = await db.query('SELECT MAX(CodigoMatricula) FROM Alunos');
-            let ultimoCodigo = result.rows[0].max || 0;
-            let novoCodigo = parseInt(ultimoCodigo) + 1; // Incrementa o último código
-            return novoCodigo;
-        } catch (err) {
-            console.error('Erro ao gerar código de matrícula:', err);
-            return 1; // Se ocorrer um erro, iniciar com 1
-        }
-    };
-
-    // Obter o código de matrícula
-    gerarCodigoMatricula().then(codigoMatricula => {
-        // Salvar o aluno no banco
-        const aluno = {
-            codigoMatricula,
-            nome,
-            email,
-            telefone,
-            cursoId,  // 'cursoId' sendo usado corretamente
-            turmaId,  // 'turmaId' sendo usado corretamente
-            dataCadastro: new Date()
-        };
-
-        const query = `
-            INSERT INTO Alunos (CodigoMatricula, Nome, Email, Telefone, CursoId, TurmaId, DataCadastro)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
-        `;
-
-        db.query(query, [
-            aluno.codigoMatricula,
-            aluno.nome,
-            aluno.email,
-            aluno.telefone,
-            aluno.cursoId,
-            aluno.turmaId,
-            aluno.dataCadastro
-        ], (err, result) => {
-            if (err) {
-                return res.status(500).json({ erro: 'Erro ao matricular aluno' });
-            }
-
-            res.status(200).json({ mensagem: 'Aluno matriculado com sucesso', aluno });
+    
+    try {
+        const result = await pool.query(
+            `INSERT INTO alunos (nome, email, telefone, cursoId, turmaId) 
+            VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+            [nome, email, telefone, cursoId, turmaId]
+        );
+    
+        const aluno = result.rows[0];
+        res.status(201).json({
+            codigomatricula: aluno.codigomatricula,  // O código de matrícula gerado automaticamente
+            datacadastro: aluno.datacadastro,        // A data de cadastro gerada automaticamente
+            aluno: aluno,                            // Retorna todos os dados do aluno inserido
         });
-    }).catch(err => {
-        res.status(500).json({ erro: 'Erro ao gerar código de matrícula' });
-    });
+    } catch (err) {
+        console.error('Erro ao matricular aluno:', err);
+        res.status(500).json({ error: 'Erro ao matricular aluno', details: err.message });
+    }
+    
 });
+
 
 app.get('/leads', async (req, res) => {
     const { nome, email, cursointeresse } = req.query; // Captura os parâmetros da query
