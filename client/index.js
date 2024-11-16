@@ -7,20 +7,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('searchInput');
     const filterField = document.getElementById('filterField');
     const leadsListModal = document.getElementById('leadsListModal');
-    const leadForm = document.getElementById('leadForm'); // Formulário de cadastro de leads
-    const turmaSelect = document.getElementById('turma'); // Select de turmas
+    const leadForm = document.getElementById('leadForm'); 
+    const turmaSelect = document.getElementById('turma'); 
     
 
     
-    // Função para abrir o modal e carregar leads
+
     if (openModalBtn) {
         openModalBtn.addEventListener('click', () => {
             modal.style.display = 'block';
-            fetchLeads(); // Carregar leads ao abrir o modal
+            fetchLeads(); 
         });
     }
 
-    // Função para fechar o modal
     if (closeModalBtn || fecharModalAluno) {
         closeModalBtn.addEventListener('click', () => {
             modal.style.display = 'none';
@@ -30,25 +29,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     
-    // Função para fechar o modal
-    function fecharModal() {
-        consultarAlunosModal.style.display = 'none';
-    }
 
-    // Fechar o modal quando clicar fora da área do modal
     window.onclick = function(event) {
         if (event.target === modal) {
             modal.style.display = 'none';
         }
     };
 
-    // Função de filtro de leads enquanto o usuário digita
     if (searchInput) {
         searchInput.addEventListener('input', async function() {
             const campoFiltro = filterField.value; // Captura o filtro selecionado
             const valorFiltro = searchInput.value.trim(); // Captura o valor da busca
 
-            // Se o campo de busca estiver vazio, exibe todos os leads
             if (valorFiltro.length === 0) {
                 fetchLeads();
                 return;
@@ -57,12 +49,10 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 let url = 'http://localhost:3000/leads?';
 
-                // Para os filtros Nome e Email
                 if (campoFiltro === 'nome' || campoFiltro === 'email') {
                     url += `${campoFiltro}=${encodeURIComponent(valorFiltro)}`;
                 }
                 
-                // Para o filtro de Curso, usamos o campo 'cursointeresse'
                 if (campoFiltro === 'curso') {
                     url += `cursointeresse=${encodeURIComponent(valorFiltro)}`;
                 }
@@ -70,7 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch(url);
                 const leads = await response.json();
 
-                // Exibe os resultados
                 displayLeads(leads);
             } catch (err) {
                 console.error('Erro ao buscar leads:', err);
@@ -78,9 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Função para exibir os leads no modal
     function displayLeads(leads) {
-        leadsListModal.innerHTML = ''; // Limpar resultados anteriores
+        leadsListModal.innerHTML = '';
 
         if (leads.length === 0) {
             leadsListModal.innerHTML = '<p>Nenhum lead encontrado.</p>';
@@ -108,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Função para buscar e renderizar todos os leads
     async function fetchLeads() {
         try {
             const response = await fetch('http://localhost:3000/get-leads');
@@ -119,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Função para verificar se há leads cadastrados ao carregar a página
     checkLeadsExist();
 
     async function checkLeadsExist() {
@@ -135,7 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Função para cadastrar um novo lead
     if (leadForm) {
         leadForm.addEventListener('submit', async function (e) {
             e.preventDefault();  // Impede o comportamento padrão do formulário
@@ -156,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok) {
                     alert('Lead cadastrado com sucesso!');
-                    leadForm.reset();  // Resetar o formulário
+                    leadForm.reset();  
                 } else {
                     const errorData = await response.json();
                     alert('Erro ao cadastrar lead: ' + errorData.error);
@@ -168,21 +153,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Função para gerar código de matrícula
    
-    // Função para buscar e popular as turmas no select
     async function fetchTurmas() {
         try {
             const response = await fetch('http://localhost:3000/api/turmas');
             const turmas = await response.json();
 
-            // Verifica se existem turmas
             if (turmas.length === 0) {
                 console.warn('Nenhuma turma disponível.');
                 return;
             }
 
-            // Popula o select com as turmas
             if (turmaSelect) {
                 turmaSelect.innerHTML = '<option value="">Selecione uma turma</option>'; // Limpar opções anteriores
                 turmas.forEach(turma => {
@@ -197,14 +178,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Carregar as turmas assim que o DOM for carregado
     fetchTurmas();
 });
 
-// Função para cadastrar um aluno
 if (leadForm) {
     leadForm.addEventListener('submit', async function (e) {
-        e.preventDefault();  // Impede o comportamento padrão do formulário
+        e.preventDefault(); 
 
         const nome = document.getElementById('nome').value;
         const telefone = document.getElementById('telefone').value;
@@ -212,12 +191,11 @@ if (leadForm) {
         const curso = document.getElementById('curso').value;
         const turma = document.getElementById('turma').value;
 
-        // Verificar se todos os campos estão preenchidos
         if (!nome || !telefone || !email || !curso || !turma) {
             mensagemErro.textContent = 'Todos os campos são obrigatórios!';
             return;
         } else {
-            mensagemErro.textContent = ''; // Limpar mensagem de erro
+            mensagemErro.textContent = ''; 
         }
 
         const lead = { aluno: nome, telefone, email, curso, turma };
@@ -232,7 +210,7 @@ if (leadForm) {
             if (response.ok) {
                 const data = await response.json();
                 alert('Aluno cadastrado com sucesso! Código de matrícula: ' + data.codigomatricula);
-                leadForm.reset();  // Resetar o formulário
+                leadForm.reset(); 
             } else {
                 const errorData = await response.json();
                 alert('Erro ao cadastrar aluno: ' + errorData.mensagem);
@@ -254,7 +232,7 @@ async function consultarAlunos() {
             return;
         }
 
-        // Exibir os alunos no frontend (por exemplo, em um modal ou tabela)
+        
         alunos.forEach(aluno => {
             const alunoBox = document.createElement('div');
             alunoBox.classList.add('aluno-box');
@@ -271,21 +249,19 @@ async function consultarAlunos() {
     }
 }
 
-// Chamar a função de consulta ao carregar a página ou ao abrir o modal
 consultarAlunos();
 
 
-// Função para abrir o modal
 function abrirModal() {
     const modal = document.getElementById('consultarAlunosModal');
-    modal.style.display = 'flex'; // Exibe o modal
-    consultarAlunos(); // Carrega os dados dos alunos
+    modal.style.display = 'flex'; 
+    consultarAlunos(); 
 }
 
 // Função para fechar o modal
 function fecharModal() {
     const modal = document.getElementById('consultarAlunosModal');
-    modal.style.display = 'none'; // Esconde o modal
+    modal.style.display = 'none'; 
 }
 
 // Função para buscar e exibir os alunos
@@ -312,7 +288,7 @@ async function consultarAlunos() {
             6: " UX/UI Design",
         };
         const tabelaAlunos = document.getElementById('tabelaAlunos').getElementsByTagName('tbody')[0];
-        tabelaAlunos.innerHTML = ''; // Limpa a tabela antes de preencher
+        tabelaAlunos.innerHTML = ''; 
 
         alunos.forEach(aluno => {
             const row = document.createElement('tr');
@@ -328,12 +304,11 @@ async function consultarAlunos() {
     }
 }
 
-// Função para cadastrar o aluno
-// Função para matricular o aluno
-function matricularAluno(event) {
-    event.preventDefault(); // Impede o envio padrão do formulário
 
-    // Pegando os dados do formulário
+function matricularAluno(event) {
+    event.preventDefault();
+
+  
     const curso = document.getElementById('curso').value;
     const turma = document.getElementById('turma').value;
     const nome = document.getElementById('nome').value;
@@ -346,7 +321,6 @@ function matricularAluno(event) {
         return;
     }
 
-    // Dados a serem enviados para o servidor
     const aluno = {
         nome,
         email,
@@ -355,7 +329,6 @@ function matricularAluno(event) {
         turmaId: turma
     };
 
-    // Enviar os dados para o servidor via fetch
     fetch('http://localhost:3000/matricular-aluno', {
         method: 'POST',
         headers: {
@@ -369,7 +342,7 @@ function matricularAluno(event) {
             alert(`Erro: ${data.error}`);
         } else {
             alert('Aluno matriculado com sucesso!');
-            document.getElementById('formMatricula').reset(); // Limpa o formulário
+            document.getElementById('formMatricula').reset(); 
         }
     })
     .catch(error => {
@@ -378,30 +351,6 @@ function matricularAluno(event) {
     });
 }
 
-// Carregar as turmas quando o curso for selecionado
-document.getElementById('curso').addEventListener('change', function() {
-    const cursoId = this.value;
-
-    if (!cursoId) return; // Não faz nada se não houver curso selecionado
-
-    // Fazer a requisição para buscar as turmas
-    fetch(`http://localhost:3000/api/turmas?cursoId=${cursoId}`)
-        .then(response => response.json())
-        .then(turmas => {
-            const turmaSelect = document.getElementById('turma');
-            turmaSelect.innerHTML = '<option value="">Selecione uma turma</option>'; // Resetar as opções
-            turmas.forEach(turma => {
-                const option = document.createElement('option');
-                option.value = turma.id;
-                option.textContent = turma.nome;
-                turmaSelect.appendChild(option);
-            });
-        })
-        .catch(error => {
-            console.error('Erro ao carregar turmas:', error);
-            alert('Erro ao carregar as turmas.');
-        });
-});
 
 
 
@@ -411,3 +360,4 @@ document.getElementById('curso').addEventListener('change', function() {
 
 
 
+  

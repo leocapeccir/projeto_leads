@@ -1,16 +1,15 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { Pool } = require('pg');
-const cors = require('cors'); // Importar o CORS
+const cors = require('cors'); 
 
 const app = express();
 const port = 3000;
 
-// Habilitar o CORS para todas as origens ou para um domínio específico
 app.use(cors({
-    origin: 'http://127.0.0.1:5500', // Permite requisições da origem específica
-    methods: ['GET', 'POST'],       // Permite apenas GET e POST
-    allowedHeaders: ['Content-Type', 'Authorization'], // Permite cabeçalhos específicos
+    origin: 'http://127.0.0.1:5500', 
+    methods: ['GET', 'POST'],       
+    allowedHeaders: ['Content-Type', 'Authorization'], 
 }));
 
 app.use(bodyParser.json());
@@ -23,7 +22,6 @@ const pool = new Pool({
     port: 5432,
 });
 
-// Endpoint para retornar todos os leads cadastrados
 app.get('/get-leads', async (req, res) => {
     const { nome, email, curso } = req.query;
     let query = 'SELECT * FROM Leads WHERE 1=1';
@@ -69,7 +67,6 @@ app.get('/check-leads', async (req, res) => {
 app.post('/cadastrar-lead', async (req, res) => {
     const { nome, telefone, email, cursoInteresse } = req.body;
 
-    // Verifique se os campos necessários foram recebidos
     if (!nome || !telefone || !email || !cursoInteresse) {
         return res.status(400).json({ 
             error: 'Todos os campos são obrigatórios',
@@ -87,47 +84,44 @@ app.post('/cadastrar-lead', async (req, res) => {
             'INSERT INTO Leads (Nome, Telefone, Email, CursoInteresse) VALUES ($1, $2, $3, $4) RETURNING *',
             [nome, telefone, email, cursoInteresse]
         );
-        res.status(201).json(result.rows[0]);  // Retorna o lead cadastrado
+        res.status(201).json(result.rows[0]);  
     } catch (err) {
         console.error('Erro ao cadastrar lead:', err);
         res.status(500).json({ error: 'Erro ao cadastrar lead', details: err.message });
     }
 });
 
-// Endpoint para matricular o aluno
-// Exemplo de endpoint de matrícula
 app.post('/matricular-aluno', async (req, res) => {
-    const { nome, email, telefone, cursoId, turmaId } = req.body;
+   const { nome, email, telefone, cursoId, turmaId } = req.body;
 
-    if (!nome || !email || !telefone || !cursoId || !turmaId) {
-        return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
-    }
-    
-    try {
-        const result = await pool.query(
-            `INSERT INTO alunos (nome, email, telefone, cursoId, turmaId) 
-            VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-            [nome, email, telefone, cursoId, turmaId]
-        );
-    
-        const aluno = result.rows[0];
-        res.status(201).json({
-            codigomatricula: aluno.codigomatricula,  // O código de matrícula gerado automaticamente
-            datacadastro: aluno.datacadastro,        // A data de cadastro gerada automaticamente
-            aluno: aluno,                            // Retorna todos os dados do aluno inserido
-        });
-    } catch (err) {
-        console.error('Erro ao matricular aluno:', err);
-        res.status(500).json({ error: 'Erro ao matricular aluno', details: err.message });
-    }
-    
+if (!nome || !email || !telefone || !cursoId || !turmaId) {
+    return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+}
+
+try {
+    const result = await pool.query(
+        `INSERT INTO alunos (nome, email, telefone, cursoId, turmaId) 
+        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+        [nome, email, telefone, cursoId, turmaId]
+    );
+
+    const aluno = result.rows[0];
+    res.status(201).json({
+        codigomatricula: aluno.codigomatricula,  
+        datacadastro: aluno.datacadastro,        
+        aluno: aluno,                          
+    });
+} catch (err) {
+    console.error('Erro ao matricular aluno:', err);
+    res.status(500).json({ error: 'Erro ao matricular aluno', details: err.message });
+}
+
 });
 
 
 app.get('/leads', async (req, res) => {
-    const { nome, email, cursointeresse } = req.query; // Captura os parâmetros da query
-
-    let query = 'SELECT * FROM Leads WHERE 1=1'; // Base da consulta SQL
+    const { nome, email, cursointeresse } = req.query; 
+    let query = 'SELECT * FROM Leads WHERE 1=1'; 
     const params = [];
 
     // Filtro por nome
@@ -144,20 +138,20 @@ app.get('/leads', async (req, res) => {
 
     // Filtro por curso
     if (cursointeresse) {
-        const cursoNum = parseInt(cursointeresse, 10); // Converte o valor para inteiro
+        const cursoNum = parseInt(cursointeresse, 10);
         if (!isNaN(cursoNum)) {
             params.push(cursoNum);
-            query += ` AND CursoInteresse = $${params.length}`; // Aplica o filtro de curso
+            query += ` AND CursoInteresse = $${params.length}`; 
         } else {
             console.log("Valor de cursointeresse inválido:", cursointeresse);
         }
     }
 
     try {
-        console.log("Consulta SQL:", query);  // Depuração da consulta
-        console.log("Parâmetros:", params);  // Depuração dos parâmetros
-        const result = await pool.query(query, params);  // Executa a consulta
-        res.json(result.rows); // Retorna os leads encontrados
+        console.log("Consulta SQL:", query);  
+        console.log("Parâmetros:", params);  
+        const result = await pool.query(query, params); 
+        res.json(result.rows); 
     } catch (err) {
         console.error('Erro ao buscar leads:', err);
         res.status(500).send('Erro ao buscar leads');
@@ -166,14 +160,14 @@ app.get('/leads', async (req, res) => {
 
 app.get('/api/turmas', async (req, res) => {
     try {
-        const query = 'SELECT id, descricao FROM turmas'; // Ajuste conforme o nome das colunas
+        const query = 'SELECT id, descricao FROM turmas'; 
         const result = await pool.query(query);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Nenhuma turma encontrada' });
         }
         
-        res.json(result.rows); // Retorna as turmas
+        res.json(result.rows); 
     } catch (err) {
         console.error('Erro ao buscar turmas:', err);
         res.status(500).json({ error: 'Erro interno do servidor' });
@@ -194,3 +188,6 @@ app.get('/consultar-alunos', async (req, res) => {
 app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}`);
 });
+
+
+
