@@ -154,3 +154,8 @@ button:hover {
 .lead-box p {
   margin: 5px 0;
 }
+
+.paragrafoBusca {
+  display: flex;
+  font-size: 8px;
+}
