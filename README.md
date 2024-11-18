@@ -24,6 +24,7 @@ Este é um sistema de captação de leads e gerenciamento de matrículas desenvo
 
 instale as dependências do projeto npm
 para rodar o código no terminal do vs code na pasta do projeto vá até a pasta server "  cd server  "
+digite o comando node --watch server.js
 o servidor rodará na porta 3000
 abra o arquivo index.html no navegador.
 
