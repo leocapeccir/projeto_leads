@@ -23,11 +23,6 @@ Este é um sistema de captação de leads e gerenciamento de matrículas desenvo
 - [PostgreSQL](https://www.postgresql.org/) configurado.
 
 ## 🔧 Configuração do Projeto
-
-1. Clone o repositório:
-   ```bash
-   git clone https://github.com/seu-usuario/sistema-leads.git
-   cd sistema-leads
 INSTALE AS DEPENDÊNCIAS 
 
 npm install
